@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            body > section {
+               margin: 10px auto;
+               border: 1px solid #808080;
+               height: 570px;
+               background-color: #f1f1f1;
+               position: relative;
+               width: 1000px;
+            }
+            
+            .mesa {
+                position: absolute;
+                border-radius: 50%;
+                background-color: #a25f37;
+                box-shadow: 0px 0px 30px #000 inset;
+                top: 135px;
+                left: 350px;    
+                width: 300px;
+                height: 300px;    
+                border: 1px solid  #834c2b;  
+            }
+            
+            .fil {
+                position: absolute;
+                width: 100px;
+                transition: all .5s;
+                display: block;
+            }
+            
+            .chela {
+                position: absolute;
+                transition: all .5s;     
+                display: block;           
+            }           
+            
+        </style>
+        <script src="jquery-1.10.2.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <header>
+            <h2>Cena de los filósofos</h2>
+        </header>
+        <div>
+            <label for="lstFil">Homeros: </label>
+            <select id="lstFil">
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+            </select>
+            <label for="lblEstado">Estado: </label>
+            <label id="lblEstado">Detenido</label>
+            <button id="btnStart">Iniciar</button>
+        </div>
+        <section id="canvas">
+            <div class="mesa"></div>
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-0" class="fil" />
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-1" class="fil" />
+            <img src="/images/homer-chela.png" alt="Filósofo homero" id="fil-2" class="fil" />
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-3" class="fil" />
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-4" class="fil" />
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-5" class="fil" />
+            <img src="/images/homer-ham.gif" alt="Filósofo homero" id="fil-6" class="fil" />
+            <img src="/images/chela.png" alt="Duff" id="chela-0" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-1" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-2" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-3" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-4" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-5" class="chela">
+            <img src="/images/chela.png" alt="Duff" id="chela-6" class="chela">
+        </section>
+
+        <script type="text/javascript">
+            var pagef = {
+                lstFil: $("#lstFil"),
+                lblEstado: $("#lblEstado"),
+                btnStart: $("#btnStart"),
+                numFilosofos: 5,
+                center: { x: 0, y: 0 },
+                radio: 220,
+                homerwidth: 0,
+                homerheight: 0,
+                chelawidth: 0,
+                chelaheight: 0,
+                running: false,
+                filosofos: [],
+                chelas: [],
+                Estados: { fil: "filosofando", ham: "hambriento", chel: "cheleando" },
+                EstadosSrc: {
+                    filosofando: "/images/homer-fil.png",
+                    hambriento: "/images/homer-ham.gif",
+                    cheleando: "/images/homer-chela.png"
+                },
+                timerState: 0,
+                timerCount: 0,
+                time: 2000,
+                init: function () {
+                    this.homerwidth = $(".fil").width();
+                    this.homerheight = $(".fil").height();
+                    this.chelawidth = $(".chela").width();
+                    this.chelaheight = $(".chela").height();
+                    this.center.x = $("#canvas").width() / 2;
+                    this.center.y = $("#canvas").height() / 2;
+                    console.log(this.center);
+                    for (var i = 0; i < 7; i++) {
+                        this.filosofos.push({ id: i, estado: "filosofando", chelas: 0 });
+                        this.chelas.push({ id: i, filosofo: -1 });
+                    }
+                    console.log(this.chelas[2].filosofo);
+                    this.chelas;
+                    this.bindings();
+                    pagef.render();
+                },
+                bindings: function () {
+                    pagef.lstFil.on("change", this.NumFilosofosChanged);
+                    pagef.btnStart.on("click", this.start);
+                },
+                NumFilosofosChanged: function (e) {
+                    pagef.numFilosofos = parseInt(pagef.lstFil.val());
+                    pagef.render();
+                },
+                render: function () {
+                    var angle = 2 * Math.PI / pagef.numFilosofos;
+                    for (var i = 0; i <= 6; i++) {
+                        if (i >= pagef.numFilosofos) {
+                            $("#fil-" + i).hide();
+                            $("#chela-" + i).hide();
+                        } else {
+                            var x = pagef.radio * Math.cos(i * angle) - pagef.homerwidth / 2;
+                            var y = pagef.radio * Math.sin(i * angle) - pagef.homerheight / 2;
+                            switch (pagef.filosofos[i].chelas) {
+                                case 1:
+                                    pagef.filosofos[i].estado = pagef.Estados.ham;
+                                    break;
+                                case 2:
+                                    pagef.filosofos[i].estado = pagef.Estados.chel;
+                                    break;
+                                default:
+                                    pagef.filosofos[i].estado = pagef.Estados.fil;
+
+                            }
+                            pagef.filosofos[i].chelas = 0;
+
+                            $("#fil-" + i)
+                                .css("top", (pagef.center.y + y) + "px")
+                                .css("left", (pagef.center.x + x) + "px")
+                                .attr("src", pagef.EstadosSrc[pagef.filosofos[i].estado])
+                                .show();
+
+
+                            x = (pagef.radio) * Math.cos(pagef.chelas[i].filosofo == -1 ? (i + .5) * angle : pagef.chelas[i].filosofo * angle) - pagef.chelawidth / 2;
+                            y = (pagef.radio) * Math.sin(pagef.chelas[i].filosofo == -1 ? (i + .5) * angle : pagef.chelas[i].filosofo * angle) - pagef.chelaheight / 2;
+                            $("#chela-" + i)
+                                .css("top", (pagef.center.y + y) + "px")
+                                .css("left", (pagef.center.x + x) + "px")
+                                .show();
+                        }
+                    }
+                },
+                gen: function () {
+                    for (var i = 0; i < pagef.numFilosofos; i++) {
+                        var val = Math.floor(Math.random() * 3);
+                        switch (val) {
+                            case 0://la chela no se mueve
+                                pagef.chelas[i].filosofo = -1;
+                                break;
+                            case 1://Chela -1
+                                pagef.chelas[i].filosofo = i;
+                                pagef.filosofos[pagef.chelas[i].filosofo].chelas++;
+                                break;
+                            case 2://Chela +1
+                                pagef.chelas[i].filosofo = i+1;
+                                pagef.filosofos[pagef.chelas[i].filosofo].chelas++;
+                                break;
+                        }
+
+                    }
+                },
+                start: function () {
+                    pagef.running = !pagef.running;
+                    console.log(pagef.running);
+                    if (pagef.running) {
+                        //detener timer                       
+                        pagef.timerState = setInterval(function () {
+                            pagef.timerCount++;
+                            //pagef.lblEstado.text(pagef.timerCount);
+                            pagef.gen();
+                            pagef.render();
+                        }, pagef.time);
+                    } else {
+                        clearInterval(pagef.timerState);
+                    }
+                    pagef.lblEstado.text(pagef.running ? "Iniciado" : "Detenido");
+                    pagef.btnStart.text(pagef.running ? "Detener" : "Iniciar");
+                }
+            };
+            pagef.init();
+
+        </script>
+    </body>
+</html>
