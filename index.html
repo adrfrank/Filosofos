@@ -105,23 +105,25 @@
                     this.chelaheight = $(".chela").height();
                     this.center.x = $("#canvas").width() / 2;
                     this.center.y = $("#canvas").height() / 2;
-                    console.log(this.center);
-                    for (var i = 0; i < 7; i++) {
-                        this.filosofos.push({ id: i, estado: "filosofando", chelas: 0 });
-                        this.chelas.push({ id: i, filosofo: -1 });
-                    }
-                    console.log(this.chelas[2].filosofo);
-                    this.chelas;
                     this.bindings();
-                    pagef.render();
+                    this.reset();
                 },
                 bindings: function () {
                     pagef.lstFil.on("change", this.NumFilosofosChanged);
                     pagef.btnStart.on("click", this.start);
                 },
+                reset: function () {
+                    pagef.filosofos = [];
+                    pagef.chelas = [];
+                    for (var i = 0; i < 7; i++) {
+                        pagef.filosofos.push({ id: i, estado: "filosofando", chelas: 0 });
+                        pagef.chelas.push({ id: i, filosofo: -1 });
+                    }
+                    this.render();
+                },
                 NumFilosofosChanged: function (e) {
                     pagef.numFilosofos = parseInt(pagef.lstFil.val());
-                    pagef.render();
+                    pagef.reset();
                 },
                 render: function () {
                     var angle = 2 * Math.PI / pagef.numFilosofos;
@@ -165,15 +167,15 @@
                     for (var i = 0; i < pagef.numFilosofos; i++) {
                         var val = Math.floor(Math.random() * 3);
                         switch (val) {
-                            case 0://la chela no se mueve
+                            case 0: //la chela no se mueve
                                 pagef.chelas[i].filosofo = -1;
                                 break;
-                            case 1://Chela -1
+                            case 1: //Chela -1
                                 pagef.chelas[i].filosofo = i;
                                 pagef.filosofos[pagef.chelas[i].filosofo].chelas++;
                                 break;
-                            case 2://Chela +1
-                                pagef.chelas[i].filosofo = i+1;
+                            case 2: //Chela +1
+                                pagef.chelas[i].filosofo = i + 1;
                                 pagef.filosofos[pagef.chelas[i].filosofo].chelas++;
                                 break;
                         }
@@ -193,6 +195,7 @@
                         }, pagef.time);
                     } else {
                         clearInterval(pagef.timerState);
+                        pagef.reset();
                     }
                     pagef.lblEstado.text(pagef.running ? "Iniciado" : "Detenido");
                     pagef.btnStart.text(pagef.running ? "Detener" : "Iniciar");
